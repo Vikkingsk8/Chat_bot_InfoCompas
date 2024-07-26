@@ -1,0 +1,165 @@
+/* styles.css */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-image: url("/static/background.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    overflow: hidden; /* Запрещаем прокрутку страницы */
+}
+.header {
+    background-color: #007BFF;
+    height: 50px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+.footer {
+    background-color: #007BFF;
+    height: auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: white;
+    font-size: 14px;
+    margin-top: auto; /* Этот стиль прижимает footer вниз */
+    padding: 10px 0;
+}
+.footer .contact-info {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 5px;
+    padding: 5px; /* Добавляем отступ слева */
+}
+.footer .copyright {
+    font-size: 12px;
+    color: white;
+    margin-bottom: 5px;
+    align-self: center; /* Центрируем надпись */
+}
+.logo {
+    height: 30px;
+    margin-left: 10px;
+}
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1; /* Этот стиль позволяет chat-container занимать оставшееся пространство */
+    padding: 20px;
+}
+.chat-box {
+    width: 100%;
+    max-width: 800px; /* Увеличиваем максимальную ширину */
+    height: 100%;
+    max-height: calc(100vh - 140px); /* Максимальная высота минус отступы сверху и снизу */
+    background-color: transparent; /* Делаем фон прозрачным */
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: none; /* Убираем тень */
+    overflow-y: auto; /* Добавляем вертикальную прокрутку */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column-reverse; /* Сообщения появляются снизу */
+    scrollbar-width: thin; /* Устанавливаем тонкий скроллбар для Firefox */
+    scrollbar-color: #888 transparent; /* Цвет скроллбара для Firefox */
+}
+.chat-box::-webkit-scrollbar {
+    width: 12px; /* Ширина скроллбара */
+}
+.chat-box::-webkit-scrollbar-track {
+    background: transparent; /* Прозрачный фон трека скроллбара */
+}
+.chat-box::-webkit-scrollbar-thumb {
+    background: #888; /* Цвет ползунка скроллбара */
+    border-radius: 10px; /* Округление ползунка скроллбара */
+}
+.chat-box::-webkit-scrollbar-thumb:hover {
+    background: #555; /* Цвет ползунка скроллбара при наведении */
+}
+.input-container {
+    display: flex;
+    width: 100%;
+    max-width: 800px; /* Увеличиваем максимальную ширину */
+    margin-top: 20px;
+}
+.input-field {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-right: 10px;
+    box-sizing: border-box;
+}
+.send-button {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+.send-button:hover {
+    background-color: #0056b3;
+}
+.message {
+    margin: 10px 0;
+    line-height: 1.4;
+    display: flex;
+    align-items: center;
+    max-width: 80%; /* Ограничиваем максимальную ширину сообщения */
+}
+.user-message {
+    background-color: #007BFF;
+    color: white;
+    justify-content: flex-end;
+    align-self: flex-end;
+    border-radius: 10px 10px 0 10px;
+    padding: 10px;
+}
+.bot-message {
+    background-color: #f1f1f1;
+    color: #333;
+    justify-content: flex-start;
+    align-self: flex-start;
+    border-radius: 10px 10px 10px 0;
+    padding: 10px;
+}
+.loading-message {
+    text-align: center;
+    color: #888;
+}
+.message img {
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
+}
+.user-message img {
+    margin-left: 10px;
+    order: 1; /* Этот стиль перемещает иконку в конец flex-контейнера */
+}
+.feedback-buttons {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+.feedback-buttons button {
+    margin: 0 5px;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.feedback-buttons button.more {
+    background-color: #ffc107;
+    color: white;
+}
+.feedback-buttons button.more:hover {
+    background-color: #e0a800;
+}

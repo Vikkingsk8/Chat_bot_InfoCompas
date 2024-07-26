@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Чат-бот</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="header">
+        <img src="{{ url_for('static', filename='image.png') }}" alt="Логотип ЦБ РФ" class="logo">
+    </div>
+    <div class="chat-container">
+        <div class="chat-box" id="chat-box">
+            <!-- Здесь будет отображаться диалог -->
+        </div>
+        <div class="input-container">
+            <input type="text" class="input-field" id="input-field" placeholder="Введите ваш запрос...">
+            <button class="send-button" id="send-button">Отправить</button>
+        </div>
+    </div>
+    <div class="footer">
+        <div class="contact-info">
+            <div>8 (800) 300-30-00, 8 (499) 300-30-00 </div>
+            <div>&nbsp;&nbsp espp@cbr.ru</div>
+        </div>
+        <div class="copyright">© 2024 Внешний портал Банка России 2000 - 2024</div>
+    </div>
+
+    <script>
+        const chatBox = document.getElementById('chat-box');
+        const inputField = document.getElementById('input-field');
+        const sendButton = document.getElementById('send-button');
+
+        let lastQuestion = '';
+        let previousAnswers = [];
+
+        // Приветствие при запуске
+        prependMessage("Привет! Я здесь, чтобы помочь. Задайте ваш вопрос.", 'bot-message', '{{ url_for('static', filename='bot_icon.png') }}');
+
+        sendButton.addEventListener('click', () => {
+            sendMessage();
+        });
+
+        inputField.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        async function sendMessage() {
+            const userMessage = inputField.value.trim();
+            if (userMessage !== '') {
+                lastQuestion = userMessage;
+                prependMessage(userMessage, 'user-message', '{{ url_for('static', filename='user_icon.png') }}');
+                inputField.value = '';
+
+                const loadingMessage = prependMessage('Генерация ответа...', 'loading-message');
+
+                console.log("Sending message to server:", userMessage);
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ question: userMessage, previous_answers: previousAnswers })
+                });
+
+                console.log("Received response from server:", response);
+                const data = await response.json();
+                console.log("Parsed response data:", data);
+                loadingMessage.remove();
+                prependMessage(data.answer, 'bot-message', '{{ url_for('static', filename='bot_icon.png') }}');
+
+                if (data.feedback) {
+                    showMoreButton();
+                    previousAnswers.push(data.answer);
+                } else {
+                    previousAnswers = [];
+                }
+            }
+        }
+
+        function prependMessage(message, className, icon) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', className);
+
+            if (icon) {
+                const iconElement = document.createElement('img');
+                iconElement.src = icon;
+                messageElement.appendChild(iconElement);
+            }
+
+            // Добавляем сообщение как HTML
+            const messageContent = document.createElement('div');
+            messageContent.innerHTML = message;
+            messageElement.appendChild(messageContent);
+
+            chatBox.insertBefore(messageElement, chatBox.firstChild);
+            chatBox.scrollTop = 0; // Прокручиваем вверх
+            return messageElement;
+        }
+
+        function showMoreButton() {
+            const moreButton = document.createElement('button');
+            moreButton.classList.add('more');
+            moreButton.textContent = 'Еще';
+            moreButton.addEventListener('click', () => {
+                sendFeedback('more');
+            });
+
+            const feedbackButtons = document.createElement('div');
+            feedbackButtons.classList.add('feedback-buttons');
+            feedbackButtons.appendChild(moreButton);
+            chatBox.insertBefore(feedbackButtons, chatBox.firstChild);
+            chatBox.scrollTop = 0; // Прокручиваем вверх
+        }
+
+        async function sendFeedback(feedback) {
+            const loadingMessage = prependMessage('Поиск другого ответа...', 'loading-message');
+
+            console.log("Sending feedback to server:", feedback);
+            const response = await fetch('/feedback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ question: lastQuestion, feedback: feedback, previous_answers: previousAnswers })
+            });
+
+            console.log("Received response from server:", response);
+            const data = await response.json();
+            console.log("Parsed response data:", data);
+            loadingMessage.remove();
+            prependMessage(data.answer, 'bot-message', '{{ url_for('static', filename='bot_icon.png') }}');
+
+            if (data.feedback) {
+                previousAnswers.push(data.answer);
+                showMoreButton();
+            } else {
+                previousAnswers = [];
+            }
+        }
+    </script>
+</body>
+</html>
