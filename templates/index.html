@@ -3,14 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Чат-бот</title>
+    <title>ИнфоКомпас</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
     <div class="header">
         <img src="{{ url_for('static', filename='image.png') }}" alt="Логотип ЦБ РФ" class="logo">
     </div>
-    <div class="chat-container">
+    <div class="chat-container">  
+        <div class="instruction-tile">
+            <a href="https://www.cbr.ru/Content/Document/File/85699/instruction.pdf" target="_blank">
+                <img src="{{ url_for('static', filename='instruction.png') }}" alt="Инструкция" class="instruction-image">
+                <span>Руководство пользователя</span>
+            </a>
+        </div>
         <div class="chat-box" id="chat-box">
             <!-- Здесь будет отображаться диалог -->
         </div>
@@ -21,8 +27,10 @@
     </div>
     <div class="footer">
         <div class="contact-info">
-            <div>8 (800) 300-30-00, 8 (499) 300-30-00 </div>
-            <div>&nbsp;&nbsp espp@cbr.ru</div>
+            <div>Управление развития электронного взаимодействия</div>
+        </div>    
+        <div class="email">
+            <div>lk_uio@cbr.ru</div>
         </div>
         <div class="copyright">© 2024 Внешний портал Банка России 2000 - 2024</div>
     </div>
@@ -36,7 +44,7 @@
         let previousAnswers = [];
 
         // Приветствие при запуске
-        prependMessage("Привет! Я здесь, чтобы помочь. Задайте ваш вопрос.", 'bot-message', '{{ url_for('static', filename='bot_icon.png') }}');
+        prependMessage("Привет! Я ИнфоКомпас, ваш виртуальный помощник. Чем могу помочь?", 'bot-message', '{{ url_for('static', filename='bot_icon.png') }}');
 
         sendButton.addEventListener('click', () => {
             sendMessage();
@@ -70,20 +78,103 @@
                 const data = await response.json();
                 console.log("Parsed response data:", data);
                 loadingMessage.remove();
-                prependMessage(data.answer, 'bot-message', '{{ url_for('static', filename='bot_icon.png') }}');
 
-                if (data.feedback) {
-                    showMoreButton();
+                const messageElement = prependMessage(data.answer, 'bot-message', '{{ url_for('static', filename='bot_icon.png') }}', data.images, data.pdf_page);
+
+                if (data.links && data.links.length > 0) {
+                    const linksContainer = document.createElement('div');
+                    linksContainer.classList.add('links-container');
+                    data.links.forEach(link => {
+                        const linkButton = document.createElement('a');
+                        linkButton.href = link.url;
+                        linkButton.textContent = link.question.replace('?', '').trim();
+                        linkButton.target = '_blank';
+                        linkButton.classList.add('link-button', 'fade-in'); // Добавляем класс fade-in
+                        linkButton.addEventListener('click', (event) => {
+                            event.preventDefault();
+                            sendLinkQuestion(link.question, link.url); // Отправляем вопрос и открываем ссылку
+                        });
+                        linksContainer.appendChild(linkButton);
+                    });
+
+                    // Вставьте контейнер с кнопками ссылок после сообщения бота
+                    chatBox.insertBefore(linksContainer, chatBox.firstChild);
+                    setTimeout(scrollToBottom, 100); // Прокручиваем вниз после добавления кнопок с задержкой
+                }
+
+                if (data.feedback && !isGreeting(userMessage)) {
                     previousAnswers.push(data.answer);
+                    addFeedbackButtons(messageElement, userMessage, data.answer); // Исправлено здесь
                 } else {
                     previousAnswers = [];
                 }
             }
         }
 
-        function prependMessage(message, className, icon) {
+        async function sendLinkQuestion(question, url) {
+            const userMessage = question;
+            if (userMessage !== '') {
+                lastQuestion = userMessage;
+                prependMessage(userMessage, 'user-message', '{{ url_for('static', filename='user_icon.png') }}');
+
+                const loadingMessage = prependMessage('Генерация ответа...', 'loading-message');
+
+                console.log("Sending message to server:", userMessage);
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ question: userMessage, previous_answers: previousAnswers })
+                });
+
+                console.log("Received response from server:", response);
+                const data = await response.json();
+                console.log("Parsed response data:", data);
+                loadingMessage.remove();
+
+                const messageElement = prependMessage(data.answer, 'bot-message', '{{ url_for('static', filename='bot_icon.png') }}', data.images, data.pdf_page);
+
+                if (data.links && data.links.length > 0) {
+                    const linksContainer = document.createElement('div');
+                    linksContainer.classList.add('links-container');
+                    data.links.forEach(link => {
+                        const linkButton = document.createElement('a');
+                        linkButton.href = link.url;
+                        linkButton.textContent = link.question.replace('?', '').trim();
+                        linkButton.target = '_blank';
+                        linkButton.classList.add('link-button', 'fade-in'); // Добавляем класс fade-in
+                        linkButton.addEventListener('click', (event) => {
+                            event.preventDefault();
+                            sendLinkQuestion(link.question, link.url); // Отправляем вопрос и открываем ссылку
+                        });
+                        linksContainer.appendChild(linkButton);
+                    });
+
+                    // Вставьте контейнер с кнопками ссылок после сообщения бота
+                    chatBox.insertBefore(linksContainer, chatBox.firstChild);
+                    setTimeout(scrollToBottom, 100); // Прокручиваем вниз после добавления кнопок с задержкой
+                }
+
+                if (data.feedback && !isGreeting(userMessage)) {
+                    previousAnswers.push(data.answer);
+                    addFeedbackButtons(messageElement, userMessage, data.answer); // Исправлено здесь
+                } else {
+                    previousAnswers = [];
+                }
+
+                // Открываем ссылку в новом окне
+                window.open(url, '_blank');
+            }
+        }
+
+        function prependMessage(message, className, icon, images = [], pdfPage = null) {
+            // Удаляем символы _x000D_ из сообщения
+            message = message.replace(/_x000D_/g, '');
+
             const messageElement = document.createElement('div');
             messageElement.classList.add('message', className);
+            messageElement.setAttribute('data-feedback-sent', 'false'); // Добавляем атрибут для отслеживания обратной связи
 
             if (icon) {
                 const iconElement = document.createElement('img');
@@ -96,49 +187,81 @@
             messageContent.innerHTML = message;
             messageElement.appendChild(messageContent);
 
+            // Добавляем ссылку на PDF-страницу, если она есть
+            if (pdfPage) {
+                const pageLink = document.createElement('a');
+                pageLink.href = `{{ url_for('download_pdf') }}#page=${pdfPage}`;
+                pageLink.textContent = `Страница ${pdfPage}`;
+                pageLink.target = '_blank';
+                messageElement.appendChild(pageLink);
+            }
+
             chatBox.insertBefore(messageElement, chatBox.firstChild);
-            chatBox.scrollTop = 0; // Прокручиваем вверх
+            setTimeout(() => {
+                messageElement.classList.add('fade-in', 'slide-in');
+            }, 100);
+            setTimeout(scrollToBottom, 100); // Прокручиваем вниз после добавления сообщения с задержкой
             return messageElement;
         }
 
-        function showMoreButton() {
-            const moreButton = document.createElement('button');
-            moreButton.classList.add('more');
-            moreButton.textContent = 'Еще';
-            moreButton.addEventListener('click', () => {
-                sendFeedback('more');
-            });
-
-            const feedbackButtons = document.createElement('div');
-            feedbackButtons.classList.add('feedback-buttons');
-            feedbackButtons.appendChild(moreButton);
-            chatBox.insertBefore(feedbackButtons, chatBox.firstChild);
-            chatBox.scrollTop = 0; // Прокручиваем вверх
+        function isGreeting(userMessage) {
+            const greetings = ["привет", "здравствуй", "добрый день", "как дела", "погода", "возможности", "ты кто"];
+            return greetings.some(greeting => userMessage.toLowerCase().includes(greeting));
         }
 
-        async function sendFeedback(feedback) {
-            const loadingMessage = prependMessage('Поиск другого ответа...', 'loading-message');
+        function scrollToBottom() {
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
 
-            console.log("Sending feedback to server:", feedback);
-            const response = await fetch('/feedback', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ question: lastQuestion, feedback: feedback, previous_answers: previousAnswers })
-            });
+        function addFeedbackButtons(messageElement, question, answer) {
+            const feedbackContainer = document.createElement('div');
+            feedbackContainer.classList.add('feedback-container');
 
-            console.log("Received response from server:", response);
-            const data = await response.json();
-            console.log("Parsed response data:", data);
-            loadingMessage.remove();
-            prependMessage(data.answer, 'bot-message', '{{ url_for('static', filename='bot_icon.png') }}');
+            const likeButton = document.createElement('button');
+            likeButton.classList.add('feedback-button', 'like-button');
+            const likeImage = document.createElement('img');
+            likeImage.src = '{{ url_for('static', filename='like.png') }}';
+            likeButton.appendChild(likeImage);
+            likeButton.addEventListener('click', () => sendFeedback(messageElement, question, answer, 'like'));
 
-            if (data.feedback) {
-                previousAnswers.push(data.answer);
-                showMoreButton();
-            } else {
-                previousAnswers = [];
+            const dislikeButton = document.createElement('button');
+            dislikeButton.classList.add('feedback-button', 'dislike-button');
+            const dislikeImage = document.createElement('img');
+            dislikeImage.src = '{{ url_for('static', filename='dislike.png') }}';
+            dislikeButton.appendChild(dislikeImage);
+            dislikeButton.addEventListener('click', () => sendFeedback(messageElement, question, answer, 'dislike'));
+
+            feedbackContainer.appendChild(likeButton);
+            feedbackContainer.appendChild(dislikeButton);
+
+            // Вставляем контейнер с кнопками обратной связи внутрь сообщения
+            messageElement.appendChild(feedbackContainer);
+        }
+
+        async function sendFeedback(messageElement, question, answer, feedbackType) {
+            if (messageElement.getAttribute('data-feedback-sent') === 'true') {
+                return; // Если обратная связь уже была отправлена, ничего не делаем
+            }
+
+            const feedback = { question, answer };
+            try {
+                const response = await fetch(`/${feedbackType}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ feedback })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error(`Error sending ${feedbackType} feedback:`, errorData);
+                } else {
+                    console.log(`${feedbackType} feedback sent successfully`);
+                    messageElement.setAttribute('data-feedback-sent', 'true'); // Устанавливаем атрибут, чтобы указать, что обратная связь была отправлена
+                }
+            } catch (error) {
+                console.error(`Error sending ${feedbackType} feedback:`, error);
             }
         }
     </script>

@@ -1,4 +1,5 @@
 /* styles.css */
+/* Авторы: Ермилов В.В., Файбисович В.А. */
 body {
     margin: 0;
     font-family: Arial, sans-serif;
@@ -27,16 +28,24 @@ body {
     align-items: center;
     color: white;
     font-size: 14px;
-    margin-top: auto; /* Этот стиль прижимает footer вниз */
     padding: 10px 0;
+    position: fixed; /* Фиксированное позиционирование */
+    bottom: 0; /* Прижимаем к низу экрана */
 }
 .footer .contact-info {
     display: flex;
+    font-size: 12px;
     align-items: flex-start;
-    margin-bottom: 5px;
+    margin-bottom: 1px;
     padding: 5px; /* Добавляем отступ слева */
 }
 .footer .copyright {
+    font-size: 12px;
+    color: white;
+    margin-bottom: 5px;
+    align-self: center; /* Центрируем надпись */
+}
+.footer .email {
     font-size: 12px;
     color: white;
     margin-bottom: 5px;
@@ -48,17 +57,46 @@ body {
 }
 .chat-container {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
     flex: 1; /* Этот стиль позволяет chat-container занимать оставшееся пространство */
     padding: 20px;
+    position: relative; /* Добавляем относительное позиционирование */
+}
+.instruction-tile {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    background-color: #ffffff;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0);
+}
+.instruction-tile a {
+    text-decoration: none;
+    color: #007BFF;
+    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 12px;
+}
+.instruction-image {
+    width: 200px; /* Размер изображения */
+    height: auto;
+    margin-bottom: 10px;
 }
 .chat-box {
     width: 100%;
     max-width: 800px; /* Увеличиваем максимальную ширину */
     height: 100%;
-    max-height: calc(100vh - 140px); /* Максимальная высота минус отступы сверху и снизу */
+    max-height: calc(100vh - 220px); /* Максимальная высота минус отступы сверху и снизу */
     background-color: transparent; /* Делаем фон прозрачным */
     border-radius: 10px;
     padding: 20px;
@@ -69,6 +107,9 @@ body {
     flex-direction: column-reverse; /* Сообщения появляются снизу */
     scrollbar-width: thin; /* Устанавливаем тонкий скроллбар для Firefox */
     scrollbar-color: #888 transparent; /* Цвет скроллбара для Firefox */
+    margin-bottom: 20px; /* Добавляем отступ внизу */
+    position: absolute; /* Абсолютное позиционирование */
+    top: 0; /* Прижимаем к верху chat-container */
 }
 .chat-box::-webkit-scrollbar {
     width: 12px; /* Ширина скроллбара */
@@ -88,6 +129,14 @@ body {
     width: 100%;
     max-width: 800px; /* Увеличиваем максимальную ширину */
     margin-top: 20px;
+    position: fixed; /* Фиксированное позиционирование */
+    bottom: 80px; /* Прижимаем к низу экрана над footer */
+    left: 50%; /* Центрируем по горизонтали */
+    transform: translateX(-50%); /* Смещаем на половину ширины влево */
+    background-color: transparent; /* Убираем фон */
+    padding: 10px; /* Добавляем отступы */
+    border-radius: 5px; /* Округляем углы */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0); /* Добавляем тень */
 }
 .input-field {
     flex: 1;
@@ -96,6 +145,7 @@ body {
     border-radius: 5px;
     margin-right: 10px;
     box-sizing: border-box;
+    background-color: rgba(255, 255, 255, 0.8); /* Белый цвет с прозрачностью */
 }
 .send-button {
     background-color: #007BFF;
@@ -114,6 +164,9 @@ body {
     display: flex;
     align-items: center;
     max-width: 80%; /* Ограничиваем максимальную ширину сообщения */
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s, transform 0.5s;
 }
 .user-message {
     background-color: #007BFF;
@@ -124,12 +177,14 @@ body {
     padding: 10px;
 }
 .bot-message {
-    background-color: #f1f1f1;
+    background-color: rgba(255, 255, 255, 0.8); /* Белый цвет с прозрачностью */
     color: #333;
     justify-content: flex-start;
     align-self: flex-start;
     border-radius: 10px 10px 10px 0;
     padding: 10px;
+    position: relative; /* Добавляем относительное позиционирование для контейнера смайликов */
+    text-align: justify;
 }
 .loading-message {
     text-align: center;
@@ -144,22 +199,95 @@ body {
     margin-left: 10px;
     order: 1; /* Этот стиль перемещает иконку в конец flex-контейнера */
 }
-.feedback-buttons {
-    display: flex;
-    justify-content: center;
-    margin-top: 10px;
+
+/* Анимация сообщений */
+.fade-in {
+    opacity: 1;
 }
-.feedback-buttons button {
-    margin: 0 5px;
+
+.slide-in {
+    transform: translateY(0);
+}
+
+/* Добавляем стили для форматирования текста ответа */
+.bot-message p {
+    margin: 0;
+    padding: 0;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-right: 10px;
+}
+
+.bot-message a {
+    color: #007BFF;
+    text-decoration: none;
+    font-weight: bold;
+    text-align: center;
+}
+
+.bot-message a:hover {
+    text-decoration: underline;
+}
+
+/* Стили для кнопок-ссылок */
+.link-button {
+    display: inline-block;
+    margin: 5px;
     padding: 5px 10px;
-    border: none;
+    background-color: #8d60cd;
+    color: rgb(255, 255, 255);
+    text-decoration: none;
     border-radius: 5px;
     cursor: pointer;
 }
-.feedback-buttons button.more {
-    background-color: #ffc107;
-    color: white;
+
+.link-button:hover {
+    background-color: #7550aa;
 }
-.feedback-buttons button.more:hover {
-    background-color: #e0a800;
+
+/* Анимация появления кнопок-ссылок */
+.link-button.fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeIn 0.5s ease-in forwards;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Стили для контейнера ссылок */
+.links-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    margin-top: 5px;
+}
+
+.feedback-container {
+    display: flex;
+    justify-content: flex-end; /* Изменено на flex-end для выравнивания справа */
+    margin-top: auto;
+    margin-left: 20px; /* Изменено на auto для выравнивания справа */
+    margin-right: -60px; /* Добавлено для отступа справа */
+    flex-direction: column;
+    bottom: 0; /* Перемещаем контейнер вниз */
+    right: 0; /* Выравниваем контейнер справа */
+    gap: 10px;
+}
+  
+.feedback-button {
+    background-color: #b9141400;
+    border-style: hidden;
+    cursor: pointer;
+    
+}
+
+.feedback-button img {
+    width: 24px;
+    height: 24px;
 }
