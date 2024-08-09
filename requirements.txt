@@ -1,8 +1,8 @@
-Flask==3.0.3
-pandas==2.2.2
-scikit-learn==1.5.1
-nltk==3.8.1
-PyMuPDF==1.24.9
-
+Flask
+scikit-learn
+PyMuPDF
+pandas
+nltk
+APScheduler
 
 
